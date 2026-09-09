@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <manifest>
-  <control namespace="DR" constructor="FluentUITagPicker" version="0.0.37" display-name-key="FluentUITagPicker" description-key="FluentUITagPicker description" control-type="standard">
+  <control namespace="DR" constructor="FluentUITagPicker" version="0.0.38" display-name-key="FluentUITagPicker" description-key="FluentUITagPicker description" control-type="standard">
     <data-set name="tagsDataSet" display-name-key="Tags Dataset" />
     <external-service-usage enabled="false" />
     <feature-usage>
@@ -11,6 +11,8 @@
       <value name="false" display-name-key="false" description-key="False" default="true">false</value>
       <value name="true" display-name-key="true" description-key="True">true</value>
     </property>
+    <property name="parentFilterValue" display-name-key="Parent Filter Value" description-key="Value from another form field used to filter suggestions. Example: selected Error Category id." of-type="SingleLine.Text" usage="input" required="false" />
+    <property name="parentFilterAttribute" display-name-key="Parent Filter Attribute" description-key="Logical name of the related table attribute to match with Parent Filter Value." of-type="SingleLine.Text" usage="input" required="false" />
     <resources>
       <code path="index.ts" order="1" />
       <resx path="strings/FluentUITagPicker.1033.resx" version="1.0.0" />

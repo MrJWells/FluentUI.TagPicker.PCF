@@ -73,4 +73,19 @@
   <data name="**no match**" xml:space="preserve">
     <value>**aucune concordance**</value> 
   </data>
+  <data name="Select a parent category first" xml:space="preserve">
+    <value>Sélectionnez d'abord une catégorie parente</value>
+  </data>
+  <data name="Parent Filter Value" xml:space="preserve">
+    <value>Valeur de filtre parent</value>
+  </data>
+  <data name="Value from another form field used to filter suggestions. Example: selected Error Category id." xml:space="preserve">
+    <value>Valeur d’un autre champ du formulaire utilisée pour filtrer les suggestions. Exemple : id de la catégorie d’erreur sélectionnée.</value>
+  </data>
+  <data name="Parent Filter Attribute" xml:space="preserve">
+    <value>Attribut de filtre parent</value>
+  </data>
+  <data name="Logical name of the related table attribute to match with Parent Filter Value." xml:space="preserve">
+    <value>Nom logique de l’attribut de la table associée à faire correspondre avec la valeur de filtre parent.</value>
+  </data>
 </root>

@@ -73,4 +73,19 @@
   <data name="**no match**" xml:space="preserve">
     <value>**no match**</value> 
   </data>
+  <data name="Select a parent category first" xml:space="preserve">
+    <value>Select a parent category first</value>
+  </data>
+  <data name="Parent Filter Value" xml:space="preserve">
+    <value>Parent Filter Value</value>
+  </data>
+  <data name="Value from another form field used to filter suggestions. Example: selected Error Category id." xml:space="preserve">
+    <value>Value from another form field used to filter suggestions. Example: selected Error Category id.</value>
+  </data>
+  <data name="Parent Filter Attribute" xml:space="preserve">
+    <value>Parent Filter Attribute</value>
+  </data>
+  <data name="Logical name of the related table attribute to match with Parent Filter Value." xml:space="preserve">
+    <value>Logical name of the related table attribute to match with Parent Filter Value.</value>
+  </data>
 </root>

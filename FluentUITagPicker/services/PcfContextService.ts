@@ -24,6 +24,10 @@ export class PcfContextService {
   viewid : string
   showRecordImage:boolean
   isDisabled:boolean
+  parentFilterValue:string
+  parentFilterAttribute:string
+  isParentFilteringConfigured:boolean
+  hasParentFilterValue:boolean
   
   
 
@@ -39,7 +43,29 @@ export class PcfContextService {
       this.relationshipName = (this.context as any).navigation._customControlProperties.descriptor.Parameters.RelationshipName
       this.viewid = (this.context as any).navigation._customControlProperties.descriptor.Parameters.ViewId
       this.showRecordImage = props.context.parameters.showRecordImage.raw === 'true'
+      this.parentFilterAttribute = this.normalizeParentFilterAttribute((props.context.parameters as any).parentFilterAttribute?.raw)
+      this.parentFilterValue = this.normalizeParentFilterValue((props.context.parameters as any).parentFilterValue?.raw)
+      this.isParentFilteringConfigured = this.parentFilterAttribute !== ''
+      this.hasParentFilterValue = this.parentFilterValue !== ''
     }
+  }
+
+  private normalizeParentFilterValue (value:string | null | undefined) : string {
+    const normalized = (value ?? '').trim()
+    if (!normalized) {
+      return ''
+    }
+
+    return normalized.replace(/^\{+|\}+$/g, '')
+  }
+
+  private normalizeParentFilterAttribute (attribute:string | null | undefined) : string {
+    const normalized = (attribute ?? '').trim()
+    if (!normalized) {
+      return ''
+    }
+
+    return /^[A-Za-z_][A-Za-z0-9_]*$/.test(normalized) ? normalized : ''
   }
 
   async getEntityMetadata (entityname:string) : Promise<ComponentFramework.PropertyHelper.EntityMetadata> {
@@ -61,6 +87,10 @@ export class PcfContextService {
 
 
   async getDatsetViewRecords (entityname:string, primaryid:string, primaryname:string, primaryimage:string, fetchxml:string, metadata:ComponentFramework.PropertyHelper.EntityMetadata) : Promise<ComponentFramework.WebApi.Entity[]> {
+    if (this.isParentFilteringConfigured && !this.hasParentFilterValue) {
+      return []
+    }
+
     const parser = new DOMParser()
     const fetchxmldoc = parser.parseFromString(fetchxml, 'text/xml')
 
@@ -85,6 +115,17 @@ export class PcfContextService {
       customattribute.setAttribute('name', attribute)
       entityelement.appendChild(customattribute)
     })
+
+    if (this.isParentFilteringConfigured && this.hasParentFilterValue) {
+      const customfilter = fetchxmldoc.createElement('filter')
+      customfilter.setAttribute('type', 'and')
+      const condition = fetchxmldoc.createElement('condition')
+      condition.setAttribute('attribute', this.parentFilterAttribute)
+      condition.setAttribute('operator', 'eq')
+      condition.setAttribute('value', this.parentFilterValue)
+      customfilter.appendChild(condition)
+      entityelement.appendChild(customfilter)
+    }
 
     
     const fetchxmlstring = new XMLSerializer().serializeToString(fetchxmldoc)
@@ -128,4 +169,3 @@ export class PcfContextService {
     return response
   }
 }
-
