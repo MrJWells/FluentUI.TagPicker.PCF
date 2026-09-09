@@ -3,55 +3,52 @@ name: Build Power Apps Solution ZIP
 on:
   workflow_dispatch:
   push:
-    branches:
-      - main
-
-permissions:
-  contents: read
+    branches: [ main ]
 
 jobs:
-  build-and-package:
+  build-solution:
     runs-on: windows-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: npm
+          node-version: '20'
+          cache: 'npm'
 
-      - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 8.0.x
-
-      - name: Install dependencies
+      - name: Install npm dependencies
         run: npm ci
 
-      - name: Build PCF control
+      - name: Build PCF
         run: npm run build
 
-      - name: Install Power Platform CLI
-        run: dotnet tool install --global Microsoft.PowerApps.CLI.Tool
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
 
-      - name: Build solution package
-        run: msbuild Solution/Solution.cdsproj /restore /t:Build /p:Configuration=Release
+      - name: Restore NuGet for solution project
+        run: nuget restore Solution/Solution.cdsproj
 
-      - name: Verify solution ZIP output
+      - name: Build solution project (unmanaged zip)
         shell: pwsh
         run: |
-          $zipFiles = Get-ChildItem -Path "Solution/bin/Release" -Filter "*.zip" -Recurse -ErrorAction SilentlyContinue
-          if (-not $zipFiles -or $zipFiles.Count -eq 0) {
-            throw "No solution ZIP files were generated under Solution/bin/Release."
-          }
-          $zipFiles | ForEach-Object { Write-Host "Found ZIP: $($_.FullName)" }
+          msbuild Solution/Solution.cdsproj /restore /t:Build /p:Configuration=Release
 
-      - name: Upload solution ZIP artifact
+      - name: Find built solution zip
+        id: findzip
+        shell: pwsh
+        run: |
+          $zips = Get-ChildItem -Path Solution -Recurse -Filter *.zip | Select-Object -ExpandProperty FullName
+          if (-not $zips) { throw "No solution zip found under Solution/" }
+          $zip = $zips | Select-Object -First 1
+          "zip_path=$zip" >> $env:GITHUB_OUTPUT
+          Write-Host "Found zip: $zip"
+
+      - name: Upload solution artifact
         uses: actions/upload-artifact@v4
         with:
           name: powerapps-solution-zip
-          path: Solution/bin/Release/*.zip
+          path: ${{ steps.findzip.outputs.zip_path }}
           if-no-files-found: error
