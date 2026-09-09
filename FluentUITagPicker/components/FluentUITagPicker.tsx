@@ -28,11 +28,21 @@ const FluentUITagPicker = (): React.JSX.Element => {
     const [commitedOptions, setComitedOptions] = React.useState<string[]>(pcfcontext.context.parameters.tagsDataSet.sortedRecordIds);
     const [isFocused, setIsFocused] = useState(false);
     const styles = useStyles();
+    const isParentFilteringConfigured = pcfcontext.isParentFilteringConfigured;
+    const hasParentFilterValue = pcfcontext.hasParentFilterValue;
+    const isBlockedByParentFilter = isParentFilteringConfigured && !hasParentFilterValue;
+    const isPickerDisabled = pcfcontext.isDisabled || isBlockedByParentFilter;
 
 
     const placeholder = useMemo(
-        () => selectedOptions.length === 0 ? '---' : '',
-        [selectedOptions]
+        () => {
+            if (isBlockedByParentFilter) {
+                return pcfcontext.context.resources.getString('Select a parent category first') || 'Select a parent category first'
+            }
+
+            return selectedOptions.length === 0 ? '---' : ''
+        },
+        [isBlockedByParentFilter, selectedOptions]
     );
 
     const handleBlur = () => {
@@ -44,6 +54,10 @@ const FluentUITagPicker = (): React.JSX.Element => {
     };
 
     const onOptionSelect: TagPickerProps["onOptionSelect"] = (e, data) => {
+        if (isBlockedByParentFilter) {
+            return
+        }
+
         if (data.value === 'no-matches') {
             setQuery('')
             return
@@ -51,6 +65,38 @@ const FluentUITagPicker = (): React.JSX.Element => {
         setSelectedOptions(data.selectedOptions)
         setQuery('')
     };
+
+    useEffect(() => {
+        if (!isParentFilteringConfigured) {
+            return
+        }
+
+        if (!hasParentFilterValue) {
+            if (selectedOptions.length > 0) {
+                setSelectedOptions([])
+            }
+            if (commitedOptions.length > 0) {
+                setComitedOptions([])
+            }
+            setQuery('')
+            return
+        }
+
+        if (status !== 'success' || isFetching) {
+            return
+        }
+
+        const validOptionIds = new Set(options.map((option) => option.id))
+        const nextSelectedOptions = selectedOptions.filter(option => validOptionIds.has(option))
+        const nextCommitedOptions = commitedOptions.filter(option => validOptionIds.has(option))
+
+        if (nextSelectedOptions.length !== selectedOptions.length) {
+            setSelectedOptions(nextSelectedOptions)
+        }
+        if (nextCommitedOptions.length !== commitedOptions.length) {
+            setComitedOptions(nextCommitedOptions)
+        }
+    }, [isParentFilteringConfigured, hasParentFilterValue, status, isFetching, options, selectedOptions, commitedOptions])
 
     useEffect(
         () => {
@@ -220,7 +266,7 @@ const FluentUITagPicker = (): React.JSX.Element => {
                         onOptionSelect={onOptionSelect}
                         selectedOptions={selectedOptions}
                         appearance={'filled-darker'}
-                        disabled={pcfcontext.isDisabled}
+                        disabled={isPickerDisabled}
                     >
                         <TagPickerControl
                             className={styles.tagPickerControl}
@@ -275,6 +321,9 @@ const FluentUITagPicker = (): React.JSX.Element => {
                             {children}
                         </TagPickerList>
                     </TagPicker>
+                )}
+                {isBlockedByParentFilter && (
+                    <div>{pcfcontext.context.resources.getString('Select a parent category first') || 'Select a parent category first'}</div>
                 )}
             </div>
         )

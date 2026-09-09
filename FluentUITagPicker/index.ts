@@ -12,6 +12,8 @@ export class FluentUITagPicker implements ComponentFramework.StandardControl<IIn
 
     private _root: Root;
     private _props:IPcfContextServiceProps;
+    private _lastParentFilterValue = '';
+    private _lastParentFilterAttribute = '';
 
     /**
      * Empty constructor.
@@ -34,6 +36,8 @@ export class FluentUITagPicker implements ComponentFramework.StandardControl<IIn
     {
         this._root = createRoot(container!);
 
+        this._lastParentFilterValue = this.normalizeParentFilterValue((context.parameters as any).parentFilterValue?.raw)
+        this._lastParentFilterAttribute = this.normalizeParentFilterAttribute((context.parameters as any).parentFilterAttribute?.raw)
 
         this._props = {
             context: context,
@@ -50,6 +54,12 @@ export class FluentUITagPicker implements ComponentFramework.StandardControl<IIn
      */
     public updateView(context: ComponentFramework.Context<IInputs>): void
     {
+        const parentFilterValue = this.normalizeParentFilterValue((context.parameters as any).parentFilterValue?.raw)
+        const parentFilterAttribute = this.normalizeParentFilterAttribute((context.parameters as any).parentFilterAttribute?.raw)
+        const parentFilterChanged = this._lastParentFilterValue !== parentFilterValue || this._lastParentFilterAttribute !== parentFilterAttribute
+        this._lastParentFilterValue = parentFilterValue
+        this._lastParentFilterAttribute = parentFilterAttribute
+
         // ref : https://www.inogic.com/blog/2019/09/get-all-the-records-of-dataset-grid-control-swiftly
         if (!context.parameters.tagsDataSet.loading) {
 
@@ -67,12 +77,32 @@ export class FluentUITagPicker implements ComponentFramework.StandardControl<IIn
                 //console.log('index.ts: main rendering...')
                 //Render when all records are loaded
                 this._props.context = context
-                this._props.instanceid = uuidv4() // refresh the instance id to force update tag picker data when the dataset is refreshed
+                if (parentFilterChanged || context.updatedProperties.includes('tagsDataSet')) {
+                    this._props.instanceid = uuidv4() // refresh the instance id to force update tag picker data when the dataset/filter is refreshed
+                }
                 this._root.render(createElement(FluentUITagPickerApp, this._props))
             
             }
             
         }
+    }
+
+    private normalizeParentFilterValue(value: string | null | undefined): string {
+        const normalized = (value ?? '').trim()
+        if (!normalized) {
+            return ''
+        }
+
+        return normalized.replace(/^\{+|\}+$/g, '')
+    }
+
+    private normalizeParentFilterAttribute(attribute: string | null | undefined): string {
+        const normalized = (attribute ?? '').trim()
+        if (!normalized) {
+            return ''
+        }
+
+        return /^[A-Za-z_][A-Za-z0-9_]*$/.test(normalized) ? normalized : ''
     }
 
     /**

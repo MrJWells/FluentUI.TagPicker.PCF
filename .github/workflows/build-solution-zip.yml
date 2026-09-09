@@ -1,0 +1,54 @@
+name: Build Power Apps Solution ZIP
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-package:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build PCF control
+        run: npm run build
+
+      - name: Install Power Platform CLI
+        run: dotnet tool install --global Microsoft.PowerApps.CLI.Tool
+
+      - name: Build solution package
+        run: msbuild Solution/Solution.cdsproj /restore /t:Build /p:Configuration=Release
+
+      - name: Verify solution ZIP output
+        shell: pwsh
+        run: |
+          $zipFiles = Get-ChildItem -Path "Solution/bin/Release" -Filter "*.zip" -Recurse -ErrorAction SilentlyContinue
+          if (-not $zipFiles -or $zipFiles.Count -eq 0) {
+            throw "No solution ZIP files were generated under Solution/bin/Release."
+          }
+          $zipFiles | ForEach-Object { Write-Host "Found ZIP: $($_.FullName)" }
+
+      - name: Upload solution ZIP artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: powerapps-solution-zip
+          path: Solution/bin/Release/*.zip
+          if-no-files-found: error
