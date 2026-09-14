@@ -11,12 +11,12 @@ export const useRecords = () => {
   const pcfcontext = usePcfContext()
   const { entityname, fetchxml } = useDatasetView()
   const { primaryid, primaryname, primaryimage, metadata } = useMetadata(entityname)
-  const shouldFetchRecords = !pcfcontext.isParentFilteringConfigured || pcfcontext.hasParentFilterValue
+  const shouldFetchRecords = !pcfcontext.isParentFilteringConfigured || pcfcontext.hasParentFilterValues
 
   const { data, status, error, isFetching } =
     useQuery<ComponentFramework.WebApi.Entity[], Error>(
       {
-        queryKey: ['datasetviewrecords', pcfcontext.instanceid, pcfcontext.viewid, pcfcontext.parentFilterAttribute, pcfcontext.parentFilterValue],
+        queryKey: ['datasetviewrecords', pcfcontext.instanceid, pcfcontext.viewid, pcfcontext.parentFilterAttribute, ...pcfcontext.parentFilterValues],
         queryFn: () => pcfcontext.getDatsetViewRecords(entityname, primaryid, primaryname, primaryimage, fetchxml, metadata!),
         enabled: !!entityname && !!primaryid && !!fetchxml && shouldFetchRecords,
         staleTime: Infinity
@@ -56,4 +56,3 @@ export const useTagPickerOptions = () => {
 
   return { options, status, error, isFetching }
 }
-

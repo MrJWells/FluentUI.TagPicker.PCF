@@ -3,7 +3,7 @@ import DataSetInterfaces = ComponentFramework.PropertyHelper.DataSetApi;
 type DataSet = ComponentFramework.PropertyTypes.DataSet;
 import { createRoot, Root } from 'react-dom/client';
 import { createElement } from 'react';
-import { IPcfContextServiceProps } from "./services/PcfContextService";
+import { getParentFilterValueSignature, IPcfContextServiceProps, parseParentFilterValues } from "./services/PcfContextService";
 import { v4 as uuidv4 } from 'uuid';
 import FluentUITagPickerApp from "./components/FluentUITagPickerApp";
 
@@ -12,7 +12,7 @@ export class FluentUITagPicker implements ComponentFramework.StandardControl<IIn
 
     private _root: Root;
     private _props:IPcfContextServiceProps;
-    private _lastParentFilterValue = '';
+    private _lastParentFilterValueSignature = '';
     private _lastParentFilterAttribute = '';
 
     /**
@@ -36,7 +36,7 @@ export class FluentUITagPicker implements ComponentFramework.StandardControl<IIn
     {
         this._root = createRoot(container!);
 
-        this._lastParentFilterValue = this.normalizeParentFilterValue((context.parameters as any).parentFilterValue?.raw)
+        this._lastParentFilterValueSignature = getParentFilterValueSignature(parseParentFilterValues((context.parameters as any).parentFilterValue?.raw))
         this._lastParentFilterAttribute = this.normalizeParentFilterAttribute((context.parameters as any).parentFilterAttribute?.raw)
 
         this._props = {
@@ -54,10 +54,10 @@ export class FluentUITagPicker implements ComponentFramework.StandardControl<IIn
      */
     public updateView(context: ComponentFramework.Context<IInputs>): void
     {
-        const parentFilterValue = this.normalizeParentFilterValue((context.parameters as any).parentFilterValue?.raw)
+        const parentFilterValueSignature = getParentFilterValueSignature(parseParentFilterValues((context.parameters as any).parentFilterValue?.raw))
         const parentFilterAttribute = this.normalizeParentFilterAttribute((context.parameters as any).parentFilterAttribute?.raw)
-        const parentFilterChanged = this._lastParentFilterValue !== parentFilterValue || this._lastParentFilterAttribute !== parentFilterAttribute
-        this._lastParentFilterValue = parentFilterValue
+        const parentFilterChanged = this._lastParentFilterValueSignature !== parentFilterValueSignature || this._lastParentFilterAttribute !== parentFilterAttribute
+        this._lastParentFilterValueSignature = parentFilterValueSignature
         this._lastParentFilterAttribute = parentFilterAttribute
 
         // ref : https://www.inogic.com/blog/2019/09/get-all-the-records-of-dataset-grid-control-swiftly
@@ -85,15 +85,6 @@ export class FluentUITagPicker implements ComponentFramework.StandardControl<IIn
             }
             
         }
-    }
-
-    private normalizeParentFilterValue(value: string | null | undefined): string {
-        const normalized = (value ?? '').trim()
-        if (!normalized) {
-            return ''
-        }
-
-        return normalized.replace(/^\{+|\}+$/g, '')
     }
 
     private normalizeParentFilterAttribute(attribute: string | null | undefined): string {
