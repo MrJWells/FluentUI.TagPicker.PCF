@@ -13,6 +13,56 @@ export interface iTagInfo{
   name: string
 }
 
+const normalizeParentFilterToken = (value:string | null | undefined): string => {
+  const normalized = (value ?? '').trim()
+  if (!normalized) {
+    return ''
+  }
+
+  return normalized.replace(/^[\s"'[{(]+|[\s"'[\]})]+$/g, '').trim()
+}
+
+export const parseParentFilterValues = (value:string | null | undefined): string[] => {
+  const normalized = (value ?? '').trim()
+  if (!normalized) {
+    return []
+  }
+
+  if (normalized.startsWith('[') && normalized.endsWith(']')) {
+    try {
+      const parsed = JSON.parse(normalized)
+      if (Array.isArray(parsed)) {
+        return Array.from(new Set(
+          parsed
+            .filter(item => typeof item === 'string' || typeof item === 'number' || typeof item === 'boolean')
+            .map(item => normalizeParentFilterToken(String(item)))
+            .filter(item => item !== '')
+        ))
+      }
+    } catch {
+      // Fall back to delimiter parsing below.
+    }
+  }
+
+  if (normalized.includes(',') || normalized.includes(';')) {
+    return Array.from(new Set(
+      normalized
+        .split(/[;,]/)
+        .map(item => normalizeParentFilterToken(item))
+        .filter(item => item !== '')
+    ))
+  }
+
+  const singleValue = normalizeParentFilterToken(normalized)
+  return singleValue ? [singleValue] : []
+}
+
+export const getParentFilterValueSignature = (values:string[]): string => {
+  return [...new Set(values.map(value => normalizeParentFilterToken(value)).filter(value => value !== ''))]
+    .sort()
+    .join('|')
+}
+
 export class PcfContextService {
   instanceid:string
   dataset : ComponentFramework.PropertyTypes.DataSet
@@ -24,10 +74,10 @@ export class PcfContextService {
   viewid : string
   showRecordImage:boolean
   isDisabled:boolean
-  parentFilterValue:string
+  parentFilterValues:string[]
   parentFilterAttribute:string
   isParentFilteringConfigured:boolean
-  hasParentFilterValue:boolean
+  hasParentFilterValues:boolean
   
   
 
@@ -44,19 +94,10 @@ export class PcfContextService {
       this.viewid = (this.context as any).navigation._customControlProperties.descriptor.Parameters.ViewId
       this.showRecordImage = props.context.parameters.showRecordImage.raw === 'true'
       this.parentFilterAttribute = this.normalizeParentFilterAttribute((props.context.parameters as any).parentFilterAttribute?.raw)
-      this.parentFilterValue = this.normalizeParentFilterValue((props.context.parameters as any).parentFilterValue?.raw)
+      this.parentFilterValues = parseParentFilterValues((props.context.parameters as any).parentFilterValue?.raw)
       this.isParentFilteringConfigured = this.parentFilterAttribute !== ''
-      this.hasParentFilterValue = this.parentFilterValue !== ''
+      this.hasParentFilterValues = this.parentFilterValues.length > 0
     }
-  }
-
-  private normalizeParentFilterValue (value:string | null | undefined) : string {
-    const normalized = (value ?? '').trim()
-    if (!normalized) {
-      return ''
-    }
-
-    return normalized.replace(/^\{+|\}+$/g, '')
   }
 
   private normalizeParentFilterAttribute (attribute:string | null | undefined) : string {
@@ -87,7 +128,7 @@ export class PcfContextService {
 
 
   async getDatsetViewRecords (entityname:string, primaryid:string, primaryname:string, primaryimage:string, fetchxml:string, metadata:ComponentFramework.PropertyHelper.EntityMetadata) : Promise<ComponentFramework.WebApi.Entity[]> {
-    if (this.isParentFilteringConfigured && !this.hasParentFilterValue) {
+    if (this.isParentFilteringConfigured && !this.hasParentFilterValues) {
       return []
     }
 
@@ -116,14 +157,28 @@ export class PcfContextService {
       entityelement.appendChild(customattribute)
     })
 
-    if (this.isParentFilteringConfigured && this.hasParentFilterValue) {
+    if (this.isParentFilteringConfigured && this.hasParentFilterValues) {
       const customfilter = fetchxmldoc.createElement('filter')
       customfilter.setAttribute('type', 'and')
-      const condition = fetchxmldoc.createElement('condition')
-      condition.setAttribute('attribute', this.parentFilterAttribute)
-      condition.setAttribute('operator', 'eq')
-      condition.setAttribute('value', this.parentFilterValue)
-      customfilter.appendChild(condition)
+
+      if (this.parentFilterValues.length === 1) {
+        const condition = fetchxmldoc.createElement('condition')
+        condition.setAttribute('attribute', this.parentFilterAttribute)
+        condition.setAttribute('operator', 'eq')
+        condition.setAttribute('value', this.parentFilterValues[0])
+        customfilter.appendChild(condition)
+      } else {
+        const condition = fetchxmldoc.createElement('condition')
+        condition.setAttribute('attribute', this.parentFilterAttribute)
+        condition.setAttribute('operator', 'in')
+        this.parentFilterValues.forEach(value => {
+          const valueElement = fetchxmldoc.createElement('value')
+          valueElement.textContent = value
+          condition.appendChild(valueElement)
+        })
+        customfilter.appendChild(condition)
+      }
+
       entityelement.appendChild(customfilter)
     }
 

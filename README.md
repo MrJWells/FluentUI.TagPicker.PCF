@@ -26,8 +26,8 @@ The control uses [FluentUI v9](https://react.fluentui.dev/?path=/docs/components
 |-------------------|----------------------------------------------------------------------------------------------|----------   |
 | Tags Dataset  | Dataset to Expose |       Should be a N:N relationship subgrid      |
 | Show Record Image  | Show the record image beside the text. |             |
-| Parent Filter Value | Value from another form field used to filter suggestions (for example Error Category id). Leave empty to disable dependent filtering. | |
-| Parent Filter Attribute | Logical name of the related table attribute to compare with **Parent Filter Value** (for example `new_errorcategoryid`). Leave empty to disable dependent filtering. | |
+| Parent Filter Value | Value from another form field used to filter suggestions (for example Error Category id). Supports a single value or multiple values serialized as comma-separated, semicolon-separated, or JSON array text. Leave empty to disable dependent filtering. | |
+| Parent Filter Attribute | Logical name of the related table attribute to compare with **Parent Filter Value** values (for example `new_errorcategoryid`). Leave empty to disable dependent filtering. | |
 
 ![image](https://github.com/user-attachments/assets/1e6cd9cf-4a77-4229-a49a-5c375202b771)
 
@@ -60,7 +60,10 @@ To configure parent-child filtering (for example **Error Category -> Sub Error C
 Behavior:
 - If both parameters are not configured, the control keeps existing behavior.
 - If **Parent Filter Attribute** is set but **Parent Filter Value** is empty, suggestions are hidden and the picker is disabled until a parent is selected.
-- When parent value changes, suggestions refresh and selected tags that no longer match are removed.
+- **Parent Filter Value** accepts a single value or multiple values. Supported formats include a single GUID/string, comma-separated values, semicolon-separated values, JSON array strings, and values wrapped in braces.
+- Single parent values continue to use the existing one-to-one filter behavior.
+- Multiple parent values are combined so matching child records from any supplied parent value are available in the picker.
+- When parent value(s) change, suggestions refresh and selected tags that no longer match are removed.
 
 ## Build Power Apps solution ZIP artifact (GitHub Actions)
 
@@ -78,6 +81,7 @@ No automated test project is included in this repository. Validate changes manua
 
 1. Build control (`npm run build`) and import generated solution ZIP.
 2. Configure **Parent Filter Attribute** and bind **Parent Filter Value** on a model-driven form.
-3. Confirm picker is disabled until parent field has a value.
-4. Confirm suggestions are filtered to matching child records.
-5. Change parent value and confirm non-matching selected tags are removed.
+3. Confirm picker is disabled until the bound parent field has at least one value.
+4. Confirm suggestions are filtered to matching child records for a single parent value.
+5. Confirm comma-separated, semicolon-separated, or JSON-array parent values expose the combined matching child records.
+6. Change parent value(s) and confirm non-matching selected tags are removed.

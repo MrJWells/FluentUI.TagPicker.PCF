@@ -29,8 +29,8 @@ const FluentUITagPicker = (): React.JSX.Element => {
     const [isFocused, setIsFocused] = useState(false);
     const styles = useStyles();
     const isParentFilteringConfigured = pcfcontext.isParentFilteringConfigured;
-    const hasParentFilterValue = pcfcontext.hasParentFilterValue;
-    const isBlockedByParentFilter = isParentFilteringConfigured && !hasParentFilterValue;
+    const hasParentFilterValues = pcfcontext.hasParentFilterValues;
+    const isBlockedByParentFilter = isParentFilteringConfigured && !hasParentFilterValues;
     const isPickerDisabled = pcfcontext.isDisabled || isBlockedByParentFilter;
 
 
@@ -71,7 +71,7 @@ const FluentUITagPicker = (): React.JSX.Element => {
             return
         }
 
-        if (!hasParentFilterValue) {
+        if (!hasParentFilterValues) {
             if (selectedOptions.length > 0) {
                 setSelectedOptions([])
             }
@@ -96,7 +96,7 @@ const FluentUITagPicker = (): React.JSX.Element => {
         if (nextCommitedOptions.length !== commitedOptions.length) {
             setComitedOptions(nextCommitedOptions)
         }
-    }, [isParentFilteringConfigured, hasParentFilterValue, status, isFetching, options, selectedOptions, commitedOptions])
+    }, [isParentFilteringConfigured, hasParentFilterValues, status, isFetching, options, selectedOptions, commitedOptions])
 
     useEffect(
         () => {
