@@ -168,15 +168,18 @@ export class PcfContextService {
         condition.setAttribute('value', this.parentFilterValues[0])
         customfilter.appendChild(condition)
       } else {
-        const condition = fetchxmldoc.createElement('condition')
-        condition.setAttribute('attribute', this.parentFilterAttribute)
-        condition.setAttribute('operator', 'in')
+        const anyParentFilter = fetchxmldoc.createElement('filter')
+        anyParentFilter.setAttribute('type', 'or')
+
         this.parentFilterValues.forEach(value => {
-          const valueElement = fetchxmldoc.createElement('value')
-          valueElement.textContent = value
-          condition.appendChild(valueElement)
+          const condition = fetchxmldoc.createElement('condition')
+          condition.setAttribute('attribute', this.parentFilterAttribute)
+          condition.setAttribute('operator', 'eq')
+          condition.setAttribute('value', value)
+          anyParentFilter.appendChild(condition)
         })
-        customfilter.appendChild(condition)
+
+        customfilter.appendChild(anyParentFilter)
       }
 
       entityelement.appendChild(customfilter)
