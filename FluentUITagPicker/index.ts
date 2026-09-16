@@ -16,7 +16,7 @@ export class FluentUITagPicker implements ComponentFramework.StandardControl<IIn
     private _lastParentFilterValueSignature = '';
     private _lastParentFilterAttribute = '';
     private _changeNotificationSequence = 0;
-    private _changeNotificationToken = '';
+    private _changeNotificationToken: string | undefined;
 
     /**
      * Empty constructor.
@@ -42,7 +42,6 @@ export class FluentUITagPicker implements ComponentFramework.StandardControl<IIn
 
         this._lastParentFilterValueSignature = getParentFilterValueSignature(parseParentFilterValues((context.parameters as any).parentFilterValue?.raw))
         this._lastParentFilterAttribute = this.normalizeParentFilterAttribute((context.parameters as any).parentFilterAttribute?.raw)
-        this._changeNotificationToken = (context.parameters as any).changeNotificationToken?.raw ?? ''
 
         this._props = {
             context: context,
