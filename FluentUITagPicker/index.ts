@@ -110,9 +110,7 @@ export class FluentUITagPicker implements ComponentFramework.StandardControl<IIn
         const changeNotificationToken = this._changeNotificationToken
         this._changeNotificationToken = undefined
 
-        return changeNotificationToken === undefined
-            ? {}
-            : { changeNotificationToken };
+        return { changeNotificationToken };
     }
 
     /**
