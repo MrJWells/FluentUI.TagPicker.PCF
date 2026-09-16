@@ -26,6 +26,7 @@ The control uses [FluentUI v9](https://react.fluentui.dev/?path=/docs/components
 |-------------------|----------------------------------------------------------------------------------------------|----------   |
 | Tags Dataset  | Dataset to Expose |       Should be a N:N relationship subgrid      |
 | Show Record Image  | Show the record image beside the text. |             |
+| Change Notification Token | Optional bound text column that the control updates after a successful associate/disassociate operation. Bind this when host form code needs an immediate callback via the bound column's `OnChange`. The value is an opaque change token and should be treated as a signal only. | |
 | Parent Filter Value | Value from another form field used to filter suggestions (for example Error Category id). Supports a single value or multiple values serialized as comma-separated, semicolon-separated, or JSON array text. Leave empty to disable dependent filtering. | |
 | Parent Filter Attribute | Logical name of the related table attribute to compare with **Parent Filter Value** values (for example `new_errorcategoryid`). Leave empty to disable dependent filtering. | |
 
@@ -64,6 +65,22 @@ Behavior:
 - Single parent values continue to use the existing one-to-one filter behavior.
 - Multiple parent values are combined so matching child records from any supplied parent value are available in the picker.
 - When parent value(s) change, suggestions refresh and selected tags that no longer match are removed.
+
+## Host change notification setup
+
+When a host form needs to react immediately after the picker changes its N:N associations, bind **Change Notification Token** to any text column that is safe for the host form script to observe.
+
+Behavior:
+- The control updates this bound value only after at least one associate/disassociate Dataverse request succeeds.
+- The value is an opaque token (`timestamp|sequence`) intended only to indicate that the relationship changed.
+- The control does not emit the token during unrelated renders, initial load, or parent-filter polling.
+- Existing consumers that do not bind this property keep the current behavior.
+
+Typical model-driven form integration:
+1. Add a hidden single-line text column for notification purposes.
+2. Bind **Change Notification Token** to that column in the PCF configuration.
+3. Register host form JavaScript on that column's `OnChange`.
+4. In the host handler, re-read/synchronize the N:N relationship and refresh any dependent controls.
 
 ## Build Power Apps solution ZIP artifact (GitHub Actions)
 

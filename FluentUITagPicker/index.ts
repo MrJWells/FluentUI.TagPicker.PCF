@@ -12,8 +12,11 @@ export class FluentUITagPicker implements ComponentFramework.StandardControl<IIn
 
     private _root: Root;
     private _props:IPcfContextServiceProps;
+    private _notifyOutputChanged: (() => void) | undefined;
     private _lastParentFilterValueSignature = '';
     private _lastParentFilterAttribute = '';
+    private _changeNotificationSequence = 0;
+    private _changeNotificationToken = '';
 
     /**
      * Empty constructor.
@@ -35,14 +38,17 @@ export class FluentUITagPicker implements ComponentFramework.StandardControl<IIn
     public init(context: ComponentFramework.Context<IInputs>, notifyOutputChanged: () => void, state: ComponentFramework.Dictionary, container: HTMLDivElement): void
     {
         this._root = createRoot(container!);
+        this._notifyOutputChanged = notifyOutputChanged;
 
         this._lastParentFilterValueSignature = getParentFilterValueSignature(parseParentFilterValues((context.parameters as any).parentFilterValue?.raw))
         this._lastParentFilterAttribute = this.normalizeParentFilterAttribute((context.parameters as any).parentFilterAttribute?.raw)
+        this._changeNotificationToken = (context.parameters as any).changeNotificationToken?.raw ?? ''
 
         this._props = {
             context: context,
             instanceid: uuidv4(),
-            isDarkMode: context.fluentDesignLanguage?.isDarkTheme ?? false
+            isDarkMode: context.fluentDesignLanguage?.isDarkTheme ?? false,
+            notifyRelationshipChange: this.notifyRelationshipChange.bind(this)
         }
 
     }
@@ -102,7 +108,9 @@ export class FluentUITagPicker implements ComponentFramework.StandardControl<IIn
      */
     public getOutputs(): IOutputs
     {
-        return {};
+        return {
+            changeNotificationToken: this._changeNotificationToken
+        };
     }
 
     /**
@@ -112,5 +120,11 @@ export class FluentUITagPicker implements ComponentFramework.StandardControl<IIn
     public destroy(): void
     {
         // Add code to cleanup control if necessary
+    }
+
+    private notifyRelationshipChange(): void {
+        this._changeNotificationSequence += 1
+        this._changeNotificationToken = `${new Date().toISOString()}|${this._changeNotificationSequence}`
+        this._notifyOutputChanged?.()
     }
 }
