@@ -41,7 +41,7 @@ export const useRecords = () => {
         : 'success'
 
   return { records: data ?? [], status: resolvedStatus,
-    error: error ?? metadataError ?? datasetViewError,
+    error: datasetViewError ?? metadataError ?? error,
     isFetching: isLoading }
 }
 
