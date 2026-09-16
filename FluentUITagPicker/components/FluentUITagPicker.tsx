@@ -260,7 +260,7 @@ const FluentUITagPicker = (): React.JSX.Element => {
     });
 
     // MAIN RENDERING
-    if (status === 'pending' || isFetching) {
+    if (!isBlockedByParentFilter && (status === 'pending' || isFetching)) {
         return <Spinner size='tiny' appearance='primary' label={pcfcontext.context.resources.getString('Loading...') || 'Loading...'} />
     } if (status === 'error') {
         return <div>{pcfcontext.context.resources.getString('Error fetching data...') || 'Error fetching data...'}</div>
