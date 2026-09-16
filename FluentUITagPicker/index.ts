@@ -17,6 +17,7 @@ export class FluentUITagPicker implements ComponentFramework.StandardControl<IIn
     private _lastParentFilterAttribute = '';
     private _changeNotificationSequence = 0;
     private _changeNotificationToken: string | undefined;
+    private _pendingChangeNotificationToken: string | undefined;
 
     /**
      * Empty constructor.
@@ -59,6 +60,11 @@ export class FluentUITagPicker implements ComponentFramework.StandardControl<IIn
      */
     public updateView(context: ComponentFramework.Context<IInputs>): void
     {
+        if (this._pendingChangeNotificationToken !== undefined
+            && (context.parameters as any).changeNotificationToken?.raw === this._pendingChangeNotificationToken) {
+            this._pendingChangeNotificationToken = undefined
+        }
+
         const parentFilterValueSignature = getParentFilterValueSignature(parseParentFilterValues((context.parameters as any).parentFilterValue?.raw))
         const parentFilterAttribute = this.normalizeParentFilterAttribute((context.parameters as any).parentFilterAttribute?.raw)
         const parentFilterChanged = this._lastParentFilterValueSignature !== parentFilterValueSignature || this._lastParentFilterAttribute !== parentFilterAttribute
@@ -107,10 +113,7 @@ export class FluentUITagPicker implements ComponentFramework.StandardControl<IIn
      */
     public getOutputs(): IOutputs
     {
-        const changeNotificationToken = this._changeNotificationToken
-        this._changeNotificationToken = undefined
-
-        return { changeNotificationToken };
+        return { changeNotificationToken: this._pendingChangeNotificationToken };
     }
 
     /**
@@ -125,6 +128,7 @@ export class FluentUITagPicker implements ComponentFramework.StandardControl<IIn
     private notifyRelationshipChange(): void {
         this._changeNotificationSequence += 1
         this._changeNotificationToken = `${new Date().toISOString()}|${this._changeNotificationSequence}`
+        this._pendingChangeNotificationToken = this._changeNotificationToken
         this._notifyOutputChanged?.()
     }
 }
