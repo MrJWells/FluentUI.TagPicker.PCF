@@ -10,7 +10,7 @@ PowerApps Component framework (PCF) Control that renders a **Tag Picker** out of
 
 ![image](https://github.com/user-attachments/assets/af3aa23d-c84b-4317-93e6-f8d7b545b7b1)
 
-:point_right:[Download Here](https://github.com/MrJWells/FluentUI.TagPicker.PCF/releases/latest)
+:point_right:Download the latest package from this repository's **Releases** page.
 
 The control uses [FluentUI v9](https://react.fluentui.dev/?path=/docs/components-tagpicker--default) Tag picker control from the Fluent2 design system.
 
