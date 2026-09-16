@@ -38,6 +38,8 @@ export const useRecords = () => {
       ? 'error'
       : isLoading
         ? 'pending'
+        : shouldFetchRecords && !hasRecordQueryPrerequisites
+          ? 'pending'
         : shouldFetchRecords
           ? 'success'
           : status
