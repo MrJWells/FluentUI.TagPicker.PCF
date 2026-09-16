@@ -1,4 +1,4 @@
-# FluentUI.TagPicker.PCF ![GitHub all releases](https://img.shields.io/github/downloads/drivardxrm/FluentUI.TagPicker.PCF/total?style=plastic)
+# MultiSelect.TagPicker.PCF
 
 PowerApps Component framework (PCF) Control that renders a **Tag Picker** out of a many-to-many (N:N) subgrid in a Dataverse Model-driven form. 
 
@@ -6,11 +6,11 @@ PowerApps Component framework (PCF) Control that renders a **Tag Picker** out of
 
 ![image](https://github.com/user-attachments/assets/3fdae5ba-dd87-458b-8b10-57e6cab16134)
 
-**With FluentUI Tag Picker PCF**
+**With MultiSelect Tag Picker PCF**
 
 ![image](https://github.com/user-attachments/assets/af3aa23d-c84b-4317-93e6-f8d7b545b7b1)
 
-:point_right:[Download Here](https://github.com/drivardxrm/FluentUI.TagPicker.PCF/releases/latest)
+:point_right:[Download Here](../../releases/latest)
 
 The control uses [FluentUI v9](https://react.fluentui.dev/?path=/docs/components-tagpicker--default) Tag picker control from the Fluent2 design system.
 
