@@ -28,6 +28,7 @@ const FluentUITagPicker = (): React.JSX.Element => {
     const [commitedOptions, setComitedOptions] = React.useState<string[]>(pcfcontext.context.parameters.tagsDataSet.sortedRecordIds);
     const [isFocused, setIsFocused] = useState(false);
     const styles = useStyles();
+    const datasetSelectedOptionsSignature = JSON.stringify(pcfcontext.context.parameters.tagsDataSet.sortedRecordIds);
     const isParentFilteringConfigured = pcfcontext.isParentFilteringConfigured;
     const hasParentFilterValues = pcfcontext.hasParentFilterValues;
     const isBlockedByParentFilter = isParentFilteringConfigured && !hasParentFilterValues;
@@ -70,7 +71,7 @@ const FluentUITagPicker = (): React.JSX.Element => {
         const datasetSelectedOptions = pcfcontext.context.parameters.tagsDataSet.sortedRecordIds
         setSelectedOptions(datasetSelectedOptions)
         setComitedOptions(datasetSelectedOptions)
-    }, [pcfcontext.instanceid, pcfcontext.context.parameters.tagsDataSet.sortedRecordIds.join('|')]);
+    }, [pcfcontext.instanceid, datasetSelectedOptionsSignature]);
 
     useEffect(() => {
         if (!isParentFilteringConfigured) {
