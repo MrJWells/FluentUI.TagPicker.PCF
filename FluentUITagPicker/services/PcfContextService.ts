@@ -6,6 +6,7 @@ export interface IPcfContextServiceProps{
   context: ComponentFramework.Context<IInputs>
   instanceid: string
   isDarkMode: boolean
+  notifyRelationshipChange: () => void
 }
 
 export interface iTagInfo{
@@ -78,6 +79,7 @@ export class PcfContextService {
   parentFilterAttribute:string
   isParentFilteringConfigured:boolean
   hasParentFilterValues:boolean
+  notifyRelationshipChange: () => void
   
   
 
@@ -97,6 +99,7 @@ export class PcfContextService {
       this.parentFilterValues = parseParentFilterValues((props.context.parameters as any).parentFilterValue?.raw)
       this.isParentFilteringConfigured = this.parentFilterAttribute !== ''
       this.hasParentFilterValues = this.parentFilterValues.length > 0
+      this.notifyRelationshipChange = props.notifyRelationshipChange
     }
   }
 

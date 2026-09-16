@@ -155,6 +155,7 @@ const FluentUITagPicker = (): React.JSX.Element => {
                     disassociateActions.forEach(action => actions.push(action));
 
                     const results = await Promise.all(actions);
+                    const hasSuccessfulChanges = results.some(result => result.success);
 
                     const errors = results.filter(x => !x.success);
                     if (errors.length > 0) {
@@ -204,6 +205,10 @@ const FluentUITagPicker = (): React.JSX.Element => {
                     }
                     else {
                         setComitedOptions(selectedOptions)
+                    }
+
+                    if (hasSuccessfulChanges) {
+                        pcfcontext.notifyRelationshipChange()
                     }
                 }
             };

@@ -12,8 +12,13 @@ export class FluentUITagPicker implements ComponentFramework.StandardControl<IIn
 
     private _root: Root;
     private _props:IPcfContextServiceProps;
+    private _notifyOutputChanged: (() => void) | undefined;
     private _lastParentFilterValueSignature = '';
     private _lastParentFilterAttribute = '';
+    private _changeNotificationSequence = 0;
+    private _changeNotificationToken: string | undefined;
+    private _pendingChangeNotificationToken: string | undefined;
+    private _lastAcknowledgedChangeNotificationToken: string | undefined;
 
     /**
      * Empty constructor.
@@ -35,6 +40,7 @@ export class FluentUITagPicker implements ComponentFramework.StandardControl<IIn
     public init(context: ComponentFramework.Context<IInputs>, notifyOutputChanged: () => void, state: ComponentFramework.Dictionary, container: HTMLDivElement): void
     {
         this._root = createRoot(container!);
+        this._notifyOutputChanged = notifyOutputChanged;
 
         this._lastParentFilterValueSignature = getParentFilterValueSignature(parseParentFilterValues((context.parameters as any).parentFilterValue?.raw))
         this._lastParentFilterAttribute = this.normalizeParentFilterAttribute((context.parameters as any).parentFilterAttribute?.raw)
@@ -42,7 +48,8 @@ export class FluentUITagPicker implements ComponentFramework.StandardControl<IIn
         this._props = {
             context: context,
             instanceid: uuidv4(),
-            isDarkMode: context.fluentDesignLanguage?.isDarkTheme ?? false
+            isDarkMode: context.fluentDesignLanguage?.isDarkTheme ?? false,
+            notifyRelationshipChange: this.notifyRelationshipChange.bind(this)
         }
 
     }
@@ -54,6 +61,15 @@ export class FluentUITagPicker implements ComponentFramework.StandardControl<IIn
      */
     public updateView(context: ComponentFramework.Context<IInputs>): void
     {
+        const changeNotificationToken = (context.parameters as any).changeNotificationToken?.raw
+
+        if (this._pendingChangeNotificationToken !== undefined
+            && changeNotificationToken === this._pendingChangeNotificationToken
+            && changeNotificationToken !== this._lastAcknowledgedChangeNotificationToken) {
+            this._lastAcknowledgedChangeNotificationToken = changeNotificationToken
+            this._pendingChangeNotificationToken = undefined
+        }
+
         const parentFilterValueSignature = getParentFilterValueSignature(parseParentFilterValues((context.parameters as any).parentFilterValue?.raw))
         const parentFilterAttribute = this.normalizeParentFilterAttribute((context.parameters as any).parentFilterAttribute?.raw)
         const parentFilterChanged = this._lastParentFilterValueSignature !== parentFilterValueSignature || this._lastParentFilterAttribute !== parentFilterAttribute
@@ -102,7 +118,7 @@ export class FluentUITagPicker implements ComponentFramework.StandardControl<IIn
      */
     public getOutputs(): IOutputs
     {
-        return {};
+        return { changeNotificationToken: this._pendingChangeNotificationToken };
     }
 
     /**
@@ -112,5 +128,13 @@ export class FluentUITagPicker implements ComponentFramework.StandardControl<IIn
     public destroy(): void
     {
         // Add code to cleanup control if necessary
+    }
+
+    private notifyRelationshipChange(): void {
+        this._changeNotificationSequence += 1
+        // Opaque host notification signal only; consumers should not depend on this string format.
+        this._changeNotificationToken = `${new Date().toISOString()}|${this._changeNotificationSequence}`
+        this._pendingChangeNotificationToken = this._changeNotificationToken
+        this._notifyOutputChanged?.()
     }
 }
