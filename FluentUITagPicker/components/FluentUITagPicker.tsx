@@ -67,6 +67,12 @@ const FluentUITagPicker = (): React.JSX.Element => {
     };
 
     useEffect(() => {
+        const datasetSelectedOptions = pcfcontext.context.parameters.tagsDataSet.sortedRecordIds
+        setSelectedOptions(datasetSelectedOptions)
+        setComitedOptions(datasetSelectedOptions)
+    }, [pcfcontext.instanceid, pcfcontext.context.parameters.tagsDataSet.sortedRecordIds.join('|')]);
+
+    useEffect(() => {
         if (!isParentFilteringConfigured) {
             return
         }

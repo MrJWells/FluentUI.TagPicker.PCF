@@ -60,6 +60,15 @@ export class FluentUITagPicker implements ComponentFramework.StandardControl<IIn
         this._lastParentFilterValueSignature = parentFilterValueSignature
         this._lastParentFilterAttribute = parentFilterAttribute
 
+        this._props.context = context
+        if (parentFilterChanged || context.updatedProperties.includes('tagsDataSet')) {
+            this._props.instanceid = uuidv4() // refresh the instance id to force update tag picker data when the dataset/filter is refreshed
+        }
+
+        if (parentFilterChanged) {
+            this._root.render(createElement(FluentUITagPickerApp, this._props))
+        }
+
         // ref : https://www.inogic.com/blog/2019/09/get-all-the-records-of-dataset-grid-control-swiftly
         if (!context.parameters.tagsDataSet.loading) {
 
@@ -76,11 +85,9 @@ export class FluentUITagPicker implements ComponentFramework.StandardControl<IIn
             {
                 //console.log('index.ts: main rendering...')
                 //Render when all records are loaded
-                this._props.context = context
-                if (parentFilterChanged || context.updatedProperties.includes('tagsDataSet')) {
-                    this._props.instanceid = uuidv4() // refresh the instance id to force update tag picker data when the dataset/filter is refreshed
+                if (!parentFilterChanged) {
+                    this._root.render(createElement(FluentUITagPickerApp, this._props))
                 }
-                this._root.render(createElement(FluentUITagPickerApp, this._props))
             
             }
             

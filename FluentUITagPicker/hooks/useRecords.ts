@@ -9,23 +9,40 @@ import { useMetadata } from './useMetadata'
 
 export const useRecords = () => {
   const pcfcontext = usePcfContext()
-  const { entityname, fetchxml } = useDatasetView()
-  const { primaryid, primaryname, primaryimage, metadata } = useMetadata(entityname)
+  const { entityname, fetchxml, status: datasetViewStatus, error: datasetViewError, isFetching: isFetchingDatasetView } = useDatasetView()
+  const { primaryid, primaryname, primaryimage, metadata, status: metadataStatus, error: metadataError, isFetching: isFetchingMetadata } = useMetadata(entityname)
   const shouldFetchRecords = !pcfcontext.isParentFilteringConfigured || pcfcontext.hasParentFilterValues
+  const hasRecordQueryPrerequisites = !!entityname && !!primaryid && !!fetchxml
 
   const { data, status, error, isFetching } =
     useQuery<ComponentFramework.WebApi.Entity[], Error>(
       {
         queryKey: ['datasetviewrecords', pcfcontext.instanceid, pcfcontext.viewid, pcfcontext.parentFilterAttribute, ...pcfcontext.parentFilterValues],
         queryFn: () => pcfcontext.getDatsetViewRecords(entityname, primaryid, primaryname, primaryimage, fetchxml, metadata!),
-        enabled: !!entityname && !!primaryid && !!fetchxml && shouldFetchRecords,
+        enabled: hasRecordQueryPrerequisites && shouldFetchRecords,
         staleTime: Infinity
       }
     )
 
-  return { records: data, status,
-    error,
-    isFetching }
+  const isLoading =
+    shouldFetchRecords &&
+    (
+      datasetViewStatus === 'pending' ||
+      isFetchingDatasetView ||
+      (!!entityname && (metadataStatus === 'pending' || isFetchingMetadata)) ||
+      (hasRecordQueryPrerequisites && (status === 'pending' || isFetching))
+    )
+
+  const resolvedStatus =
+    datasetViewStatus === 'error' || metadataStatus === 'error' || status === 'error'
+      ? 'error'
+      : isLoading
+        ? 'pending'
+        : 'success'
+
+  return { records: data ?? [], status: resolvedStatus,
+    error: error ?? metadataError ?? datasetViewError,
+    isFetching: isLoading }
 }
 
 
