@@ -1,10 +1,10 @@
 <ImportExportXml version="9.1.0.643" SolutionPackageVersion="9.1" languagecode="1033" generatedBy="CrmLive" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <SolutionManifest>
     <!-- Unique Name of Cds Solution-->
-    <UniqueName>MultiSelect.TagPicker.PCF</UniqueName>
+    <UniqueName>FluentUI.TagPicker.PCF</UniqueName>
     <LocalizedNames>
       <!-- Localized Solution Name in language code -->
-      <LocalizedName description="MultiSelect.TagPicker.PCF" languagecode="1033" />
+      <LocalizedName description="FluentUI.TagPicker.PCF" languagecode="1033" />
     </LocalizedNames>
     <Descriptions />
     <Version>1.0.0.0</Version>
